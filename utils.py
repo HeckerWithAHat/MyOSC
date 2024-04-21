@@ -1,0 +1,23 @@
+import time
+all_cues = []
+
+show_end = False
+
+def handle_arr(item):
+    global show_end
+    global all_cues
+    if "Show End" in item[0]:
+        show_end = True
+        return "END"
+    else:
+        all_cues.append(item[0])
+
+def get_cues(client):
+    global all_cues
+    global show_end
+    client.send_message("/select/first", 1)
+    while not show_end:
+        client.send_message("/select/next", 1) 
+    time.sleep(0.1)
+    client.send_message("/select/first", 1)
+    return all_cues

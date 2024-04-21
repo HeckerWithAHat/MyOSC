@@ -9,12 +9,23 @@ import threading
 import time
 import signal
 import sys
+from utils import get_cues, handle_arr
 #
 load_dotenv()
 
 ip = os.getenv("ip")
 client_port = (int)(os.getenv("client_port"))
 server_port = (int)(os.getenv("server_port"))
+
+CURRENT_HANDLER = None
+
+def set_handler(handler):
+    global CURRENT_HANDLER
+    CURRENT_HANDLER = handler
+
+def reset_handler():
+    global CURRENT_HANDLER
+    CURRENT_HANDLER = None
 
 def signal_handler(sig, frame):
     print('\nShutting Down OSC!')
@@ -23,7 +34,13 @@ def signal_handler(sig, frame):
     sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
 def handle_response(unused_addr, *args):
-    print("\nReceived response:", args)
+    global CURRENT_HANDLER
+    if CURRENT_HANDLER == None:
+        print("\n[LOG] Received response:", args)
+    match CURRENT_HANDLER:
+        case "GET_CUES":
+            handle_arr(args)
+
 
 local_dispatcher = Dispatcher()
 local_dispatcher.map("/status/current/qdesc", handle_response)
@@ -76,7 +93,17 @@ while True:
             else:
                 print("Rewinding current cue")
                 command = "/cue/current/jumpback"
+        case "PCUE":
+            set_handler("GET_CUES")
+            print("Avaliable Cues: ")
+            all_av_cues = get_cues(client)
+            for items in all_av_cues:
+                print("- " + items)
+            reset_handler()
+            command = "SKIP"
         case _  :
             print("Invalid command")
             continue
-    client.send_message(command, args)
+    if command != "SKIP":
+        client.send_message(command, args)
+    command = ""
