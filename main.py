@@ -98,7 +98,7 @@ while True:
             print("Avaliable Cues: ")
             all_av_cues = get_cues(client)
             for items in all_av_cues:
-                print("- " + items)
+                print("- [" + items[0] + "] " + items[1])
             reset_handler()
             command = "SKIP"
         case _  :

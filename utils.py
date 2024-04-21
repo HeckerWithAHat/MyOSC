@@ -10,7 +10,9 @@ def handle_arr(item):
         show_end = True
         return "END"
     else:
-        all_cues.append(item[0])
+        qnum = (item[0].split(" "))[0].strip("[").strip("]").strip(" ")
+        qname = " ".join((item[0].split(" "))[1::])
+        all_cues.append([qnum, qname])
 
 def get_cues(client):
     global all_cues
