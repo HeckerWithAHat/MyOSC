@@ -36,7 +36,7 @@ signal.signal(signal.SIGINT, signal_handler)
 def handle_response(unused_addr, *args):
     global CURRENT_HANDLER
     if CURRENT_HANDLER == None:
-        print("\n[LOG] Received response:", args)
+        print("\n[SERVER] Received 'No Handle' Response:", args)
     match CURRENT_HANDLER:
         case "GET_CUES":
             handle_arr(args)
