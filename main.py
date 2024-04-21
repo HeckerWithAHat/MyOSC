@@ -13,7 +13,8 @@ import sys
 load_dotenv()
 
 ip = os.getenv("ip")
-port = 8000
+client_port = (int)(os.getenv("client_port"))
+server_port = (int)(os.getenv("server_port"))
 
 def signal_handler(sig, frame):
     print('\nShutting Down OSC!')
@@ -26,12 +27,12 @@ def handle_response(unused_addr, *args):
 
 local_dispatcher = Dispatcher()
 local_dispatcher.map("/status/current/qdesc", handle_response)
-local_server = osc_server.ThreadingOSCUDPServer(("127.0.0.1", 2000), local_dispatcher)
+local_server = osc_server.ThreadingOSCUDPServer(("127.0.0.1", server_port), local_dispatcher)
 
 local_server_thread = threading.Thread(target=local_server.serve_forever)
 local_server_thread.start()
 
-client = SimpleUDPClient(ip, port)
+client = SimpleUDPClient(ip, client_port)
 command =""
 while True:
     message = input("Enter command: ")
