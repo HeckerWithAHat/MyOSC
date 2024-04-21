@@ -35,19 +35,28 @@ client = SimpleUDPClient(ip, port)
 while True:
     message = input("Enter command: ")
     msg_parts = message.split(" ")
-    if msg_parts[0] == "ADVANCE":
-        if msg_parts[1] == "cue":
+    match msg_parts[0]:
+        case "ADVANCE":
             print("Advancing cue")
             client.send_message("/select/next", 1)
-    if msg_parts[0] == "BACK":
-        if msg_parts[1] == "cue":
-            print("Going back cue")
-            client.send_message("/select/prev", 1)
-    if msg_parts[0] == "GO":
-        print("Starting cue")
-        client.send_message("/cue/current/start", 1)
-    if msg_parts[0] == "STOP":
-        print("Stopping cue")
-        client.send_message("/cue/current/stop", 1)
-
-    rsp = client.send_message(message, 1)
+        case "BACK":
+            if msg_parts[1] == "cue":
+                print("Going back cue")
+                client.send_message("/select/prev", 1)
+        case "GO":
+            if (len(msg_parts) == 2): 
+                print("Starting cue " + msg_parts[1])
+                client.send_message("/cue/" + msg_parts[1] + "/start", 1)
+            else:
+                print("Starting current cue")
+                client.send_message("/cue/current/start", 1)
+        case "STOP":
+            if (len(msg_parts) == 2): 
+                print("Stopping cue " + msg_parts[1])
+                client.send_message("/cue/" + msg_parts[1] + "/stop", 1)
+            else:
+                print("Stopping current cue")
+                client.send_message("/cue/current/stop", 1)
+        case _  :
+            print("Invalid command")
+            continue
