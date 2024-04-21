@@ -32,31 +32,50 @@ local_server_thread = threading.Thread(target=local_server.serve_forever)
 local_server_thread.start()
 
 client = SimpleUDPClient(ip, port)
+command =""
 while True:
     message = input("Enter command: ")
+    args = input("Enter args: ").split(" ")
     msg_parts = message.split(" ")
     match msg_parts[0]:
         case "ADVANCE":
             print("Advancing cue")
-            client.send_message("/select/next", 1)
+            command = "/select/next"
         case "BACK":
-            if msg_parts[1] == "cue":
                 print("Going back cue")
-                client.send_message("/select/prev", 1)
+                command = "/select/prev"
         case "GO":
             if (len(msg_parts) == 2): 
                 print("Starting cue " + msg_parts[1])
-                client.send_message("/cue/" + msg_parts[1] + "/start", 1)
+                command = "/cue/" + msg_parts[1] + "/start"
             else:
                 print("Starting current cue")
-                client.send_message("/cue/current/start", 1)
+                command = "/cue/current/start"
         case "STOP":
             if (len(msg_parts) == 2): 
                 print("Stopping cue " + msg_parts[1])
-                client.send_message("/cue/" + msg_parts[1] + "/stop", 1)
+                command = "/cue/" + msg_parts[1] + "/stop"
             else:
                 print("Stopping current cue")
-                client.send_message("/cue/current/stop", 1)
+                command = "/cue/current/stop"
+        case "SELECT":
+            if (len(msg_parts) == 2): 
+                print("Selecting cue " + msg_parts[1])
+                command = "/select/" + msg_parts[1]
+            else:
+                print("Invalid command. Please provide a cue number")
+                continue
+        case "PANIC":
+            print("Stopping all cues")
+            command = "/cue/active/stop"
+        case "REWIND":
+            if (len(msg_parts) == 2): 
+                print("Rewinding cue " + msg_parts[1])
+                command = "/cue/" + msg_parts[1] + "/jumpback"
+            else:
+                print("Rewinding current cue")
+                command = "/cue/current/jumpback"
         case _  :
             print("Invalid command")
             continue
+    client.send_message(command, args)
