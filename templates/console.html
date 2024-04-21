@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>MyOSC</title>
+        <!-- Imports necessary resources -->
+        <link
+            href="https://cdn.jsdelivr.net/npm/daisyui@4.7.3/dist/full.min.css"
+            rel="stylesheet"
+            type="text/css" />
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body>
+        <form class="flex flex-row justify-evenly">
+            <div>
+                <div class="label">
+                    <span class="label-text"
+                        >Enter Command and Cue Number (optional):</span
+                    >
+                </div>
+                <textarea
+                    class="textarea textarea-bordered textarea-lg w-full max-w-xs"></textarea>
+                <div class="label">
+                    <span class="label-text-alt">Separate By Space</span>
+                </div>
+            </div>
+            <div class="flex flex-col">
+                <label class="label cursor-pointer flex space-x-3">
+                    <span class="label-text">Remember me</span>
+                    <input type="checkbox"  class="checkbox" />
+                </label>
+                
+            </div>
+            <div>
+                <div class="label">
+                    <span class="label-text">Enter Args:</span>
+                </div>
+                <textarea
+                    class="textarea textarea-bordered textarea-lg w-full max-w-xs"></textarea>
+                <div class="label">
+                    <span class="label-text-alt">Separate By New Line</span>
+                </div>
+            </div>
+        </form>
+    </body>
+</html>
