@@ -53,7 +53,7 @@
             result.data.forEach((element)=>{
                 document.getElementById("songlist").appendChild(parser.parseFromString(
                     `<label class="label cursor-pointer flex space-x-3">
-                        <span class="label-text">${element}</span>
+                        <span class="label-text">${element[1]}</span>
                         <input type="radio"  class="radio" />
                     </label>`,
                     "text/html").documentElement);    
