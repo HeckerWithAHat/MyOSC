@@ -15,6 +15,7 @@ from flask import Flask, render_template, request, send_from_directory, jsonify
 load_dotenv()
 app = Flask(__name__)
 ip = os.getenv("ip")
+server_ip = os.getenv("server_ip")
 client_port = (int)(os.getenv("client_port"))
 server_port = (int)(os.getenv("server_port"))
 
@@ -45,10 +46,11 @@ def handle_response(unused_addr, *args):
 
 local_dispatcher = Dispatcher()
 local_dispatcher.map("/status/current/qdesc", handle_response)
-local_server = osc_server.ThreadingOSCUDPServer((ip, server_port), local_dispatcher)
+local_server = osc_server.ThreadingOSCUDPServer((server_ip, server_port), local_dispatcher)
 
 local_server_thread = threading.Thread(target=local_server.serve_forever)
 local_server_thread.start()
+client = SimpleUDPClient(ip, client_port)
 
 
 @app.route('/')
@@ -57,17 +59,19 @@ def home():
 
 @app.route('/api/get_all_qs')
 def get_all_qs():
-    return  get_cues(client)
+    set_handler("GET_CUES")
+    all_av_cues = get_cues(client)
+    return {"data": all_av_cues}
+
+@app.route('/console')
+def console():
+    return render_template('console.html')
 
 if __name__ == "__main__":
     app.run()
 
 
-
-client = SimpleUDPClient(ip, client_port)
-
-
-command =""
+# command =""
 # while True:
 #     message = input("Enter command: ")
 #     args = input("Enter args: ").split(" ")
