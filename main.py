@@ -10,9 +10,10 @@ import time
 import signal
 import sys
 from utils import get_cues, handle_arr
+from flask import Flask, render_template, request, send_from_directory, jsonify
 #
 load_dotenv()
-
+app = Flask(__name__)
 ip = os.getenv("ip")
 client_port = (int)(os.getenv("client_port"))
 server_port = (int)(os.getenv("server_port"))
@@ -44,12 +45,28 @@ def handle_response(unused_addr, *args):
 
 local_dispatcher = Dispatcher()
 local_dispatcher.map("/status/current/qdesc", handle_response)
-local_server = osc_server.ThreadingOSCUDPServer(("127.0.0.1", server_port), local_dispatcher)
+local_server = osc_server.ThreadingOSCUDPServer((ip, server_port), local_dispatcher)
 
 local_server_thread = threading.Thread(target=local_server.serve_forever)
 local_server_thread.start()
 
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/api/get_all_qs')
+def get_all_qs():
+    return get_cues(client)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
 client = SimpleUDPClient(ip, client_port)
+
+
 command =""
 while True:
     message = input("Enter command: ")
@@ -107,3 +124,4 @@ while True:
     if command != "SKIP":
         client.send_message(command, args)
     command = ""
+
