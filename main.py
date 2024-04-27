@@ -67,6 +67,78 @@ def get_all_qs():
 def console():
     return render_template('console.html')
 
+@app.route('/api/GO')
+def api_go():
+    cue = request.args.get("cue")
+    if (cue!=None): 
+        print("Starting cue " + cue)
+        client.send_message("/cue/"+cue+"/GO",0)
+    else:
+        print("Starting current cue")
+        client.send_message("cue/playhead/go",0)
+    return cue
+
+@app.route('/api/STOP')
+def api_stop():
+    cue = request.args.get("cue")
+    if (cue!=None): 
+        print("Stopping cue " + cue)
+        client.send_message("/cue/"+cue+"/stop",0)
+    else:
+        print("Stopping current cue")
+        client.send_message("cue/playhead/stop",0)
+    return cue
+
+@app.route('/api/PANIC')
+def api_panic():
+    client.send_message("/cue/active/stop", 1)
+    return "It worked, but Relax"
+
+
+@app.route('/api/FORWARD')
+def api_forward():
+    cue = request.args.get("cue")
+    time = request.args.get("time")
+    if (cue!=None): 
+        if (time!=None):
+            print("Forwarding cue " + cue + " by " + time)
+            client.send_message("/cue/"+cue+"/JumpFwd",time)
+        else:
+            print("Forwarding cue " + cue)
+            client.send_message("/cue/"+cue+"/JumpFwd",[])
+        
+    else:
+        if (time!=None):
+            print("Forwarding current cue by " + time)
+            client.send_message("/cue/playhead/JumpFwd",time)
+        else:
+            print("Forwarding current cue")
+            client.send_message("/cue/playhead/JumpFwd",[])
+    return cue
+    
+
+
+@app.route('/api/REWIND')
+def api_rewind():
+    cue = request.args.get("cue")
+    time = request.args.get("time")
+    if (cue!=None): 
+        if (time!=None):
+            print("Rewinding cue " + cue + " by " + time)
+            client.send_message("/cue/"+cue+"/JumpBack",time)
+        else:
+            print("Rewinding cue " + cue)
+            client.send_message("/cue/"+cue+"/JumpBack",[])
+        
+    else:
+        if (time!=None):
+            print("Rewinding current cue by " + time)
+            client.send_message("/cue/playhead/JumpBack",time)
+        else:
+            print("Rewinding current cue")
+            client.send_message("/cue/playhead/JumpBack",[])
+    return cue
+
 if __name__ == "__main__":
     app.run()
 
@@ -84,12 +156,12 @@ if __name__ == "__main__":
 #                 print("Going back cue")
 #                 command = "/select/prev"
 #         case "GO":
-#             if (len(msg_parts) == 2): 
-#                 print("Starting cue " + msg_parts[1])
-#                 command = "/cue/" + msg_parts[1] + "/start"
-#             else:
-#                 print("Starting current cue")
-#                 command = "/cue/current/start"
+            # if (len(msg_parts) == 2): 
+            #     print("Starting cue " + msg_parts[1])
+            #     command = "/cue/" + msg_parts[1] + "/start"
+            # else:
+            #     print("Starting current cue")
+            #     command = "/cue/current/start"
 #         case "STOP":
 #             if (len(msg_parts) == 2): 
 #                 print("Stopping cue " + msg_parts[1])
