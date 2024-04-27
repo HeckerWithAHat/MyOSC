@@ -42,9 +42,11 @@
                 <div class="label">
                     <span class="label-text">Enter Time amount:</span>
                 </div>
-                <input type="number" class="w-full max-w-xs" id="time"/>
+                <input type="number" class="w-full max-w-xs" id="time" />
                 <div class="label">
-                    <span class="label-text-alt">Only applies to Forward and Rewind</span>
+                    <span class="label-text-alt"
+                        >Only applies to Forward and Rewind</span
+                    >
                 </div>
             </div>
         </form>
@@ -106,16 +108,26 @@
             document.getElementsByName("songlistradios").forEach((element) => {
                 if (element.checked) {
                     if (element.id != "current") {
-                        if(document.getElementById("time").value == ""){
+                        if (document.getElementById("time").value == "") {
                             $.ajax({ url: "/api/FORWARD?cue=" + element.id });
                         } else {
-                            $.ajax({ url: "/api/FORWARD?cue=" + element.id + "&time=" + document.getElementById("time").value });
+                            $.ajax({
+                                url:
+                                    "/api/FORWARD?cue=" +
+                                    element.id +
+                                    "&time=" +
+                                    document.getElementById("time").value,
+                            });
                         }
                     } else {
-                        if(document.getElementById("time").value == ""){
+                        if (document.getElementById("time").value == "") {
                             $.ajax({ url: "/api/FORWARD" });
                         } else {
-                            $.ajax({ url: "/api/FORWARD?time=" + document.getElementById("time").value });
+                            $.ajax({
+                                url:
+                                    "/api/FORWARD?time=" +
+                                    document.getElementById("time").value,
+                            });
                         }
                     }
                     element.checked = false;
@@ -127,16 +139,26 @@
             document.getElementsByName("songlistradios").forEach((element) => {
                 if (element.checked) {
                     if (element.id != "current") {
-                        if(document.getElementById("time").value == ""){
+                        if (document.getElementById("time").value == "") {
                             $.ajax({ url: "/api/REWIND?cue=" + element.id });
                         } else {
-                            $.ajax({ url: "/api/REWIND?cue=" + element.id + "&time=" + document.getElementById("time").value });
+                            $.ajax({
+                                url:
+                                    "/api/REWIND?cue=" +
+                                    element.id +
+                                    "&time=" +
+                                    document.getElementById("time").value,
+                            });
                         }
                     } else {
-                        if(document.getElementById("time").value == ""){
+                        if (document.getElementById("time").value == "") {
                             $.ajax({ url: "/api/REWIND" });
                         } else {
-                            $.ajax({ url: "/api/REWIND?time=" + document.getElementById("time").value });
+                            $.ajax({
+                                url:
+                                    "/api/REWIND?time=" +
+                                    document.getElementById("time").value,
+                            });
                         }
                     }
                     element.checked = false;
