@@ -33,7 +33,8 @@
                     <progress
                         class="progress progress-primary absolute w-full h-full rounded-md z-0"
                         value="0"
-                        max="100"></progress>
+                        max="100"
+                        id="current-progressbar"></progress>
                     <label
                         class="label cursor-pointer flex space-x-3 items-center z-10">
                         <span class="label-text text-white z-10"
@@ -74,7 +75,7 @@
                         parser.parseFromString(
                             `<div class="relative items-start">
                                 <progress
-                                    class="progress progress-primary absolute w-full h-full rounded-md z-0" value="0" max="100"></progress>
+                                    class="progress progress-primary absolute w-full h-full rounded-md z-0" value="0" max="100" id="${element[0]}-progressbar"></progress>
                                 <label
                                     class="label cursor-pointer flex space-x-3 items-center z-10">
                                     <span class="label-text text-white z-10">${element[1]}</span>
