@@ -46,6 +46,7 @@ def handle_response(unused_addr, *args):
 
 local_dispatcher = Dispatcher()
 local_dispatcher.map("/status/current/qdesc", handle_response)
+local_dispatcher.map("/status/remaining", handle_response)
 local_server = osc_server.ThreadingOSCUDPServer((server_ip, server_port), local_dispatcher)
 
 local_server_thread = threading.Thread(target=local_server.serve_forever)
