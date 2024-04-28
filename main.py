@@ -18,6 +18,7 @@ ip = os.getenv("ip")
 server_ip = os.getenv("server_ip")
 client_port = (int)(os.getenv("client_port"))
 server_port = (int)(os.getenv("server_port"))
+cached_time = ""
 
 CURRENT_HANDLER = None
 
@@ -42,11 +43,19 @@ def handle_response(unused_addr, *args):
     match CURRENT_HANDLER:
         case "GET_CUES":
             handle_arr(args)
+def handle_elapsed(unused_addr, *args):
+    global CURRENT_HANDLER
+    if CURRENT_HANDLER == "GET_ELAPSED":
+        print("\n[SERVER] Received Elapsed Time:", args)
+        global cached_time
+        cached_time = args[0]
+        reset_handler()
 
 
 local_dispatcher = Dispatcher()
 local_dispatcher.map("/status/current/qdesc", handle_response)
 local_server = osc_server.ThreadingOSCUDPServer((server_ip, server_port), local_dispatcher)
+local_dispatcher.map("/status/remaining", handle_elapsed)
 
 local_server_thread = threading.Thread(target=local_server.serve_forever)
 local_server_thread.start()
@@ -73,10 +82,16 @@ def api_go():
     if (cue!=None): 
         print("Starting cue " + cue)
         client.send_message("/cue/"+cue+"/GO",0)
+        set_handler("GET_ELAPSED")
     else:
         print("Starting current cue")
         client.send_message("cue/playhead/go",0)
-    return cue
+        set_handler("GET_ELAPSED")
+    time.sleep(0.3)
+    global cached_time
+    temp = cached_time
+    cached_time = ""
+    return temp
 
 @app.route('/api/STOP')
 def api_stop():
