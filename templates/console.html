@@ -13,6 +13,12 @@
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     </head>
     <body>
+        <div
+            role="alert"
+            class="alert alert-info flex justify-center hidden"
+            id="done-message">
+            <span>Done</span>
+        </div>
         <form class="flex flex-row justify-evenly">
             <div>
                 <div class="label">
@@ -28,26 +34,7 @@
                     <div class="btn btn-error" onclick="PANIC()">PANIC</div>
                 </div>
             </div>
-            <div class="flex flex-col" id="songlist">
-                <div class="relative items-start">
-                    <progress
-                        class="progress progress-primary absolute w-full h-full rounded-md z-0"
-                        value="0"
-                        max="100"
-                        id="current-progressbar"></progress>
-                    <label
-                        class="label cursor-pointer flex space-x-3 items-center z-10">
-                        <span class="label-text text-white z-10"
-                            >Current</span
-                        >
-                        <input
-                            type="radio"
-                            name="songlistradios"
-                            class="radio bg-neutral z-10"
-                            id="current" />
-                    </label>
-                </div>
-            </div>
+            <div class="flex flex-col" id="songlist"></div>
             <div>
                 <div class="label">
                     <span class="label-text">Enter Time amount:</span>
@@ -99,11 +86,32 @@
             document.getElementsByName("songlistradios").forEach((element) => {
                 if (element.checked) {
                     if (element.id != "current") {
-                        $.ajax({ url: "/api/GO?cue=" + element.id });
-                    } else {
-                        $.ajax({ url: "/api/GO" });
+                        $.ajax({
+                            url: "/api/GO?cue=" + element.id,
+                            success: function (result) {
+                                console.log(result);
+                                document.getElementById(
+                                    element.id + "-progressbar"
+                                ).max = result;
+                                setInterval(function () {
+                                    document.getElementById(
+                                        element.id + "-progressbar"
+                                    ).value += 1;
+                                }, 1000);
+                                document.getElementById(
+                                    element.id + "-progressbar"
+                                ).dataset.ismoving = "true";
+                            },
+                        });
                     }
-                    element.checked = false;
+                    document
+                        .getElementById("done-message")
+                        .classList.remove("hidden");
+                    setTimeout(() => {
+                        document
+                            .getElementById("done-message")
+                            .classList.add("hidden");
+                    }, 3000);
                 }
             });
         }
@@ -113,20 +121,29 @@
                 if (element.checked) {
                     if (element.id != "current") {
                         $.ajax({ url: "/api/STOP?cue=" + element.id });
-                    } else {
-                        $.ajax({ url: "/api/STOP" });
                     }
-                    element.checked = false;
+                    document
+                        .getElementById("done-message")
+                        .classList.remove("hidden");
+                    setTimeout(() => {
+                        document
+                            .getElementById("done-message")
+                            .classList.add("hidden");
+                    }, 3000);
                 }
             });
         }
         function PANIC() {
             $.ajax({ url: "/api/PANIC" });
+            document.getElementById("done-message").classList.remove("hidden");
+            setTimeout(() => {
+                document.getElementById("done-message").classList.add("hidden");
+            }, 3000);
         }
         function FORWARD() {
             document.getElementsByName("songlistradios").forEach((element) => {
+                // document.getElementById("current-progressbar").dataset.ismoving == "true"
                 if (element.checked) {
-                    if (element.id != "current") {
                         if (document.getElementById("time").value == "") {
                             $.ajax({ url: "/api/FORWARD?cue=" + element.id });
                         } else {
@@ -138,18 +155,15 @@
                                     document.getElementById("time").value,
                             });
                         }
-                    } else {
-                        if (document.getElementById("time").value == "") {
-                            $.ajax({ url: "/api/FORWARD" });
-                        } else {
-                            $.ajax({
-                                url:
-                                    "/api/FORWARD?time=" +
-                                    document.getElementById("time").value,
-                            });
-                        }
-                    }
-                    element.checked = false;
+                    
+                    document
+                        .getElementById("done-message")
+                        .classList.remove("hidden");
+                    setTimeout(() => {
+                        document
+                            .getElementById("done-message")
+                            .classList.add("hidden");
+                    }, 3000);
                 }
             });
         }
@@ -169,18 +183,15 @@
                                     document.getElementById("time").value,
                             });
                         }
-                    } else {
-                        if (document.getElementById("time").value == "") {
-                            $.ajax({ url: "/api/REWIND" });
-                        } else {
-                            $.ajax({
-                                url:
-                                    "/api/REWIND?time=" +
-                                    document.getElementById("time").value,
-                            });
-                        }
                     }
-                    element.checked = false;
+                    document
+                        .getElementById("done-message")
+                        .classList.remove("hidden");
+                    setTimeout(() => {
+                        document
+                            .getElementById("done-message")
+                            .classList.add("hidden");
+                    }, 3000);
                 }
             });
         }

@@ -54,7 +54,6 @@ def handle_elapsed(unused_addr, *args):
 
 local_dispatcher = Dispatcher()
 local_dispatcher.map("/status/current/qdesc", handle_response)
-local_dispatcher.map("/status/remaining", handle_response)
 local_server = osc_server.ThreadingOSCUDPServer((server_ip, server_port), local_dispatcher)
 local_dispatcher.map("/status/remaining", handle_elapsed)
 
@@ -92,7 +91,8 @@ def api_go():
     global cached_time
     temp = cached_time
     cached_time = ""
-    return temp
+    timeinsecs = (str)((float)(temp.split(":")[0])*60 + (float)(temp.split(":")[1]))
+    return timeinsecs
 
 @app.route('/api/STOP')
 def api_stop():
@@ -124,6 +124,7 @@ def api_forward():
             client.send_message("/cue/"+cue+"/JumpFwd",[])
         
     else:
+        cue = "none"
         if (time!=None):
             print("Forwarding current cue by " + time)
             client.send_message("/cue/playhead/JumpFwd",time)
@@ -147,6 +148,7 @@ def api_rewind():
             client.send_message("/cue/"+cue+"/JumpBack",[])
         
     else:
+        cue = "none"
         if (time!=None):
             print("Rewinding current cue by " + time)
             client.send_message("/cue/playhead/JumpBack",time)
