@@ -10,7 +10,7 @@ import time
 import signal
 import sys
 from utils import get_cues, handle_arr
-from flask import Flask, render_template, request, send_from_directory, jsonify
+from flask import Flask, render_template, request, send_from_directory, jsonify, redirect
 #
 load_dotenv()
 app = Flask(__name__)
@@ -21,6 +21,14 @@ server_port = (int)(os.getenv("server_port"))
 cached_time = ""
 
 CURRENT_HANDLER = None
+
+CUE_DESCRIPTION_COMMAND = "/status/current/qdesc"
+CUE_GO_COMMAND = ""
+CUE_STOP_COMMAND = ""
+CUE_JUMP_FWD_COMMAND = ""
+CUE_JUMP_BACK_COMMAND = ""
+CUE_TIME_REMAINING_COMMAND = ""
+
 
 def set_handler(handler):
     global CURRENT_HANDLER
@@ -53,9 +61,9 @@ def handle_elapsed(unused_addr, *args):
 
 
 local_dispatcher = Dispatcher()
-local_dispatcher.map("/status/current/qdesc", handle_response)
+local_dispatcher.map(CUE_DESCRIPTION_COMMAND, handle_response)
 local_server = osc_server.ThreadingOSCUDPServer((server_ip, server_port), local_dispatcher)
-local_dispatcher.map("/status/remaining", handle_elapsed)
+local_dispatcher.map(CUE_TIME_REMAINING_COMMAND, handle_elapsed)
 
 local_server_thread = threading.Thread(target=local_server.serve_forever)
 local_server_thread.start()
@@ -76,17 +84,23 @@ def get_all_qs():
 def console():
     return render_template('console.html')
 
+@app.route('/settings')
+def settings():
+    global CUE_GO_COMMAND
+    global CUE_STOP_COMMAND
+    global CUE_DESCRIPTION_COMMAND
+    global CUE_JUMP_BACK_COMMAND
+    global CUE_JUMP_FWD_COMMAND
+    global CUE_TIME_REMAINING_COMMAND
+    return render_template('settings.html', current_go_command=CUE_GO_COMMAND, current_desc_command=CUE_DESCRIPTION_COMMAND, current_stop_command=CUE_STOP_COMMAND, current_jumpfwd_command=CUE_JUMP_FWD_COMMAND, current_jumpback_command=CUE_JUMP_BACK_COMMAND, current_remaining_command=CUE_TIME_REMAINING_COMMAND)
+
 @app.route('/api/GO')
 def api_go():
     cue = request.args.get("cue")
-    if (cue!=None): 
-        print("Starting cue " + cue)
-        client.send_message("/cue/"+cue+"/GO",0)
-        set_handler("GET_ELAPSED")
-    else:
-        print("Starting current cue")
-        client.send_message("cue/playhead/go",0)
-        set_handler("GET_ELAPSED")
+    print("Starting cue " + cue)
+    client.send_message(CUE_GO_COMMAND.replace("__cue__", cue),0)
+    set_handler("GET_ELAPSED")
+    
     time.sleep(0.3)
     global cached_time
     temp = cached_time
@@ -97,17 +111,14 @@ def api_go():
 @app.route('/api/STOP')
 def api_stop():
     cue = request.args.get("cue")
-    if (cue!=None): 
-        print("Stopping cue " + cue)
-        client.send_message("/cue/"+cue+"/stop",0)
-    else:
-        print("Stopping current cue")
-        client.send_message("cue/playhead/stop",0)
+    print("Stopping cue " + cue)
+    client.send_message(CUE_STOP_COMMAND.replace("__cue__", cue),0)
+
     return cue
 
 @app.route('/api/PANIC')
 def api_panic():
-    client.send_message("/cue/active/stop", 1)
+    client.send_message(CUE_STOP_COMMAND.replace("__cue__", "active"), 1)
     return "It worked, but Relax"
 
 
@@ -115,22 +126,14 @@ def api_panic():
 def api_forward():
     cue = request.args.get("cue")
     time = request.args.get("time")
-    if (cue!=None): 
-        if (time!=None):
-            print("Forwarding cue " + cue + " by " + time)
-            client.send_message("/cue/"+cue+"/JumpFwd",time)
-        else:
-            print("Forwarding cue " + cue)
-            client.send_message("/cue/"+cue+"/JumpFwd",[])
-        
+    if (time!=None):
+        print("Forwarding cue " + cue + " by " + time)
+        client.send_message(CUE_JUMP_FWD_COMMAND.replace("__cue__", cue),time)
     else:
-        cue = "none"
-        if (time!=None):
-            print("Forwarding current cue by " + time)
-            client.send_message("/cue/playhead/JumpFwd",time)
-        else:
-            print("Forwarding current cue")
-            client.send_message("/cue/playhead/JumpFwd",[])
+        print("Forwarding cue " + cue)
+        client.send_message(CUE_JUMP_FWD_COMMAND.replace("__cue__", cue),[])
+        
+
     return cue
     
 
@@ -139,23 +142,34 @@ def api_forward():
 def api_rewind():
     cue = request.args.get("cue")
     time = request.args.get("time")
-    if (cue!=None): 
-        if (time!=None):
-            print("Rewinding cue " + cue + " by " + time)
-            client.send_message("/cue/"+cue+"/JumpBack",time)
-        else:
-            print("Rewinding cue " + cue)
-            client.send_message("/cue/"+cue+"/JumpBack",[])
-        
+    if (time!=None):
+        print("Rewinding cue " + cue + " by " + time)
+        client.send_message(CUE_JUMP_BACK_COMMAND.replace("__cue__", cue),time)
     else:
-        cue = "none"
-        if (time!=None):
-            print("Rewinding current cue by " + time)
-            client.send_message("/cue/playhead/JumpBack",time)
-        else:
-            print("Rewinding current cue")
-            client.send_message("/cue/playhead/JumpBack",[])
+        print("Rewinding cue " + cue)
+        client.send_message(CUE_JUMP_BACK_COMMAND.replace("__cue__", cue),[])
+        
+   
     return cue
+
+@app.route('/api/set_commands', methods=['POST'])
+def set_commands():
+    global CUE_GO_COMMAND
+    global CUE_STOP_COMMAND
+    global CUE_DESCRIPTION_COMMAND
+    global CUE_JUMP_BACK_COMMAND
+    global CUE_JUMP_FWD_COMMAND
+    global CUE_TIME_REMAINING_COMMAND
+
+    CUE_GO_COMMAND = request.form.get("CueGoCommand")
+    CUE_DESCRIPTION_COMMAND = request.form.get("CueDescCommand")
+    CUE_STOP_COMMAND = request.form.get("CueStopCommand")
+    CUE_JUMP_BACK_COMMAND = request.form.get("CueJumpBackCommand")
+    CUE_JUMP_FWD_COMMAND = request.form.get("CueJumpFwdCommand")
+    CUE_TIME_REMAINING_COMMAND = request.form.get("CueRemainingCommand")
+
+    return redirect("/settings")
+
 
 if __name__ == "__main__":
     app.run()
