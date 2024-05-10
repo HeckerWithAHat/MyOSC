@@ -1,0 +1,9 @@
+
+{
+    "cue.current.description":"/status/current/qdesc",
+    "cue.current.time_remaining":"/status/remaining",
+    "cue.go":"/cue/$cue/go",
+    "cue.stop":"/cue/$cue/stop",
+    "cue.jumpfwd":"/cue/$cue/jumpfwd",
+    "cue.jumpback":"/cue/$cue/jumpback"
+}

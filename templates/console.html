@@ -93,11 +93,29 @@
                                 document.getElementById(
                                     element.id + "-progressbar"
                                 ).max = result;
-                                setInterval(function () {
-                                    document.getElementById(
-                                        element.id + "-progressbar"
-                                    ).value += 1;
-                                }, 1000);
+                                document.getElementById(
+                                    element.id + "-progressbar"
+                                ).dataset.counterTaskNum = setInterval(
+                                    function () {
+                                        document.getElementById(
+                                            element.id + "-progressbar"
+                                        ).value += 1;
+                                        if (
+                                            document.getElementById(
+                                                element.id + "-progressbar"
+                                            ).value ==
+                                            document.getElementById(
+                                                element.id + "-progressbar"
+                                            ).max
+                                        )
+                                            clearInterval(
+                                                document.getElementById(
+                                                    element.id + "-progressbar"
+                                                ).dataset.counterTaskNum
+                                            );
+                                    },
+                                    1000
+                                );
                                 document.getElementById(
                                     element.id + "-progressbar"
                                 ).dataset.ismoving = "true";
@@ -121,6 +139,13 @@
                 if (element.checked) {
                     if (element.id != "current") {
                         $.ajax({ url: "/api/STOP?cue=" + element.id });
+                        clearInterval(
+                            document.getElementById(element.id + "-progressbar")
+                                .dataset.counterTaskNum
+                        );
+                        document.getElementById(
+                            element.id + "-progressbar"
+                        ).value = 0;
                     }
                     document
                         .getElementById("done-message")
@@ -142,28 +167,45 @@
         }
         function FORWARD() {
             document.getElementsByName("songlistradios").forEach((element) => {
-                // document.getElementById("current-progressbar").dataset.ismoving == "true"
                 if (element.checked) {
-                        if (document.getElementById("time").value == "") {
-                            $.ajax({ url: "/api/FORWARD?cue=" + element.id });
-                        } else {
-                            $.ajax({
-                                url:
-                                    "/api/FORWARD?cue=" +
-                                    element.id +
-                                    "&time=" +
-                                    document.getElementById("time").value,
-                            });
-                        }
-                    
-                    document
-                        .getElementById("done-message")
-                        .classList.remove("hidden");
-                    setTimeout(() => {
+                    if (document.getElementById("time").value == "") {
+                        document.getElementById("done-message").innerHTML =
+                            "Please specify a time to forward by";
                         document
                             .getElementById("done-message")
-                            .classList.add("hidden");
-                    }, 3000);
+                            .classList.remove("hidden");
+                        setTimeout(() => {
+                            document
+                                .getElementById("done-message")
+                                .classList.add("hidden");
+                        }, 3000);
+                    } else {
+                        if (
+                            document.getElementById(element.id + "-progressbar")
+                                .dataset.ismoving == "true"
+                        ) {
+                            document.getElementById(
+                                element.id + "-progressbar"
+                            ).value += Number(
+                                document.getElementById("time").value
+                            );
+                        }
+                        $.ajax({
+                            url:
+                                "/api/FORWARD?cue=" +
+                                element.id +
+                                "&time=" +
+                                document.getElementById("time").value,
+                        });
+                        document
+                            .getElementById("done-message")
+                            .classList.remove("hidden");
+                        setTimeout(() => {
+                            document
+                                .getElementById("done-message")
+                                .classList.add("hidden");
+                        }, 3000);
+                    }
                 }
             });
         }
@@ -171,27 +213,48 @@
         function REWIND() {
             document.getElementsByName("songlistradios").forEach((element) => {
                 if (element.checked) {
-                    if (element.id != "current") {
-                        if (document.getElementById("time").value == "") {
-                            $.ajax({ url: "/api/REWIND?cue=" + element.id });
-                        } else {
-                            $.ajax({
-                                url:
-                                    "/api/REWIND?cue=" +
-                                    element.id +
-                                    "&time=" +
-                                    document.getElementById("time").value,
-                            });
-                        }
-                    }
-                    document
-                        .getElementById("done-message")
-                        .classList.remove("hidden");
-                    setTimeout(() => {
+                    if (document.getElementById("time").value == "") {
+                        document.getElementById("done-message").innerHTML =
+                            "Please specify a time to rewind by";
                         document
                             .getElementById("done-message")
-                            .classList.add("hidden");
-                    }, 3000);
+                            .classList.remove("hidden");
+                        setTimeout(() => {
+                            document
+                                .getElementById("done-message")
+                                .classList.add("hidden");
+                            document.getElementById("done-message").innerHTML =
+                                "Done";
+                        }, 3000);
+                    } else {
+                        if (
+                            document.getElementById(element.id + "-progressbar")
+                                .dataset.ismoving == "true"
+                        ) {
+                            document.getElementById(
+                                element.id + "-progressbar"
+                            ).value -= Number(
+                                document.getElementById("time").value
+                            );
+                        }
+                        $.ajax({
+                            url:
+                                "/api/REWIND?cue=" +
+                                element.id +
+                                "&time=" +
+                                document.getElementById("time").value,
+                        });
+                        document
+                            .getElementById("done-message")
+                            .classList.remove("hidden");
+                        setTimeout(() => {
+                            document
+                                .getElementById("done-message")
+                                .classList.add("hidden");
+                            document.getElementById("done-message").innerHTML =
+                                "Done";
+                        }, 3000);
+                    }
                 }
             });
         }

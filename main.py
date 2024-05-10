@@ -9,6 +9,7 @@ import threading
 import time
 import signal
 import sys
+import json
 from utils import get_cues, handle_arr
 from flask import Flask, render_template, request, send_from_directory, jsonify, redirect
 #
@@ -22,12 +23,14 @@ cached_time = ""
 
 CURRENT_HANDLER = None
 
-CUE_DESCRIPTION_COMMAND = "/status/current/qdesc"
-CUE_GO_COMMAND = ""
-CUE_STOP_COMMAND = ""
-CUE_JUMP_FWD_COMMAND = ""
-CUE_JUMP_BACK_COMMAND = ""
-CUE_TIME_REMAINING_COMMAND = ""
+settings = json.load(open('settings/multiplay.json'))
+
+CUE_DESCRIPTION_COMMAND = settings["cue.current.description"]
+CUE_GO_COMMAND = settings["cue.go"]
+CUE_STOP_COMMAND = settings["cue.stop"]
+CUE_JUMP_FWD_COMMAND = settings["cue.jumpfwd"]
+CUE_JUMP_BACK_COMMAND = settings["cue.jumpback"]
+CUE_TIME_REMAINING_COMMAND = settings["cue.current.time_remaining"]
 
 
 def set_handler(handler):
@@ -84,21 +87,13 @@ def get_all_qs():
 def console():
     return render_template('console.html')
 
-@app.route('/settings')
-def settings():
-    global CUE_GO_COMMAND
-    global CUE_STOP_COMMAND
-    global CUE_DESCRIPTION_COMMAND
-    global CUE_JUMP_BACK_COMMAND
-    global CUE_JUMP_FWD_COMMAND
-    global CUE_TIME_REMAINING_COMMAND
-    return render_template('settings.html', current_go_command=CUE_GO_COMMAND, current_desc_command=CUE_DESCRIPTION_COMMAND, current_stop_command=CUE_STOP_COMMAND, current_jumpfwd_command=CUE_JUMP_FWD_COMMAND, current_jumpback_command=CUE_JUMP_BACK_COMMAND, current_remaining_command=CUE_TIME_REMAINING_COMMAND)
+
 
 @app.route('/api/GO')
 def api_go():
     cue = request.args.get("cue")
     print("Starting cue " + cue)
-    client.send_message(CUE_GO_COMMAND.replace("__cue__", cue),0)
+    client.send_message(CUE_GO_COMMAND.replace("$cue", cue),0)
     set_handler("GET_ELAPSED")
     
     time.sleep(0.3)
@@ -112,13 +107,13 @@ def api_go():
 def api_stop():
     cue = request.args.get("cue")
     print("Stopping cue " + cue)
-    client.send_message(CUE_STOP_COMMAND.replace("__cue__", cue),0)
+    client.send_message(CUE_STOP_COMMAND.replace("$cue", cue),0)
 
     return cue
 
 @app.route('/api/PANIC')
 def api_panic():
-    client.send_message(CUE_STOP_COMMAND.replace("__cue__", "active"), 1)
+    client.send_message(CUE_STOP_COMMAND.replace("$cue", "active"), 1)
     return "It worked, but Relax"
 
 
@@ -128,10 +123,10 @@ def api_forward():
     time = request.args.get("time")
     if (time!=None):
         print("Forwarding cue " + cue + " by " + time)
-        client.send_message(CUE_JUMP_FWD_COMMAND.replace("__cue__", cue),time)
+        client.send_message(CUE_JUMP_FWD_COMMAND.replace("$cue", cue),time)
     else:
         print("Forwarding cue " + cue)
-        client.send_message(CUE_JUMP_FWD_COMMAND.replace("__cue__", cue),[])
+        client.send_message(CUE_JUMP_FWD_COMMAND.replace("$cue", cue),[])
         
 
     return cue
@@ -144,31 +139,13 @@ def api_rewind():
     time = request.args.get("time")
     if (time!=None):
         print("Rewinding cue " + cue + " by " + time)
-        client.send_message(CUE_JUMP_BACK_COMMAND.replace("__cue__", cue),time)
+        client.send_message(CUE_JUMP_BACK_COMMAND.replace("$cue", cue),time)
     else:
         print("Rewinding cue " + cue)
-        client.send_message(CUE_JUMP_BACK_COMMAND.replace("__cue__", cue),[])
+        client.send_message(CUE_JUMP_BACK_COMMAND.replace("$cue", cue),[])
         
    
     return cue
-
-@app.route('/api/set_commands', methods=['POST'])
-def set_commands():
-    global CUE_GO_COMMAND
-    global CUE_STOP_COMMAND
-    global CUE_DESCRIPTION_COMMAND
-    global CUE_JUMP_BACK_COMMAND
-    global CUE_JUMP_FWD_COMMAND
-    global CUE_TIME_REMAINING_COMMAND
-
-    CUE_GO_COMMAND = request.form.get("CueGoCommand")
-    CUE_DESCRIPTION_COMMAND = request.form.get("CueDescCommand")
-    CUE_STOP_COMMAND = request.form.get("CueStopCommand")
-    CUE_JUMP_BACK_COMMAND = request.form.get("CueJumpBackCommand")
-    CUE_JUMP_FWD_COMMAND = request.form.get("CueJumpFwdCommand")
-    CUE_TIME_REMAINING_COMMAND = request.form.get("CueRemainingCommand")
-
-    return redirect("/settings")
 
 
 if __name__ == "__main__":
