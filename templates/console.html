@@ -159,7 +159,26 @@
             });
         }
         function PANIC() {
-            $.ajax({ url: "/api/PANIC" });
+            document.getElementsByName("songlistradios").forEach((element) => {
+                if (element.id != "current") {
+                        $.ajax({ url: "/api/STOP?cue=" + element.id });
+                        clearInterval(
+                            document.getElementById(element.id + "-progressbar")
+                                .dataset.counterTaskNum
+                        );
+                        document.getElementById(
+                            element.id + "-progressbar"
+                        ).value = 0;
+                    }
+                    document
+                        .getElementById("done-message")
+                        .classList.remove("hidden");
+                    setTimeout(() => {
+                        document
+                            .getElementById("done-message")
+                            .classList.add("hidden");
+                    }, 3000);
+            });
             document.getElementById("done-message").classList.remove("hidden");
             setTimeout(() => {
                 document.getElementById("done-message").classList.add("hidden");
